@@ -1,10 +1,11 @@
-// #include "scanner.hpp"
-#include <vector>
-#include <stdio.h>
+#include "scanner.hpp"
+#include <iostream>
 using namespace std;
+
 int main()
 {
-    vector<char> v(1024);
-    printf("%d %d", v.size(), v.capacity());
+    Buffer buffer("test.cpp");
+    Scanner scanner(buffer);
+    auto token = scanner.getToken();
     return 0;
 }

@@ -3,13 +3,11 @@
 #pragma once
 
 #include <string>
-#include <list>
 #include <fstream>
 #include <vector>
 #include <math.h>
 
 using std::ifstream;
-using std::list;
 using std::string;
 using std::vector;
 
@@ -58,6 +56,8 @@ public:
         double (*func_ptr)(double);
     } value;
     /* 构造函数 */
+    Token() {};
+    Token(const Token &token) : type(token.type), name(token.name), value(token.value) {};
     Token(TokenType t, const char n[]) : type(t), name(n) {};
     Token(TokenType t, const char n[], double v) : Token(t, n)
     {
@@ -96,33 +96,38 @@ static const Token TOKENTABLE[] = {
 class Buffer
 {
     vector<char> buffer;
-    int head, tail;
+    int head;
     int max_size;
+    int current_size;
+    string filepath;
+    ifstream file;
+    std::streampos start_pos;
+    bool eof;
+    void fill_buffer(ifstream &input, std::streampos &pos, int n = 4095);
 
 public:
-    Buffer(int size = 4096) : head(0), tail(0), max_size(size), buffer(size) {};
-    bool is_empty() { return head == tail; };
-    bool is_full() { return (tail + 1) % max_size == head; };
-    char get_data();
-    void put_data(char c);
-    void back_data(char c);
+    Buffer(const string &path, int size = 4096)
+        : head(0), max_size(size), current_size(0), eof(false),
+          buffer(size), filepath(path), start_pos(std::streampos(0))
+    {
+        file.open(filepath, std::ios::in);
+        if (!file.is_open())
+            throw std::runtime_error("Failed to open file: " + filepath);
+        fill_buffer(file, start_pos, 4096);
+    };
+    int get_data(); // 返回int兼容EOF
+    void back_data();
     void clear();
-    std::streampos fill_buffer(ifstream &input, std::streampos &start_pos, int n = 2048);
 };
 
 class Scanner
 {
-    list<string> lines;
-    string source_path;
-    bool ready;
-    list<string>::iterator current_char;
-    int current_line;
+    vector<Token> tokens;
+    Buffer &buffer;
 
 public:
-    Scanner(const string &source_path = "") : source_path(source_path), ready(false) {};
-    bool init(const string &input_path = ""); // 初始化和预处理
-    bool shutdown();
-    Token getToken();
+    Scanner(Buffer &buf) : tokens(), buffer(buf) {};
+    Token getToken(); // 获取下一个记号
 };
 
 #endif // SCANNER_HPP

@@ -8,20 +8,20 @@
 
 using std::unordered_map;
 
-static const unordered_map<int, TokenType> final_states[] = {
-    {{1, TokenType::ID}},
-    {{2, TokenType::CONST_ID}},
-    {{3, TokenType::CONST_ID}},
-    {{4, TokenType::MUL}},
-    {{5, TokenType::POWER}},
-    {{6, TokenType::DIV}},
-    {{7, TokenType::MINUS}},
-    {{8, TokenType::PLUS}},
-    {{9, TokenType::COMMA}},
-    {{10, TokenType::SEMICO}},
-    {{11, TokenType::L_BRACKET}},
-    {{12, TokenType::R_BRACKET}},
-    {{13, TokenType::COMMENT}},
+static const unordered_map<int, TokenType> final_states = {
+    {1, TokenType::ID},
+    {2, TokenType::CONST_ID},
+    {3, TokenType::CONST_ID},
+    {4, TokenType::MUL},
+    {5, TokenType::POWER},
+    {6, TokenType::DIV},
+    {7, TokenType::MINUS},
+    {8, TokenType::PLUS},
+    {9, TokenType::COMMA},
+    {10, TokenType::SEMICO},
+    {11, TokenType::L_BRACKET},
+    {12, TokenType::R_BRACKET},
+    {13, TokenType::COMMENT},
 }; // 终态表
 
 static const unordered_map<int, unordered_map<char, int>> state_transition_table = {
@@ -123,6 +123,7 @@ static const unordered_map<int, unordered_map<char, int>> state_transition_table
         }},
 }; // 状态转移表
 
-int smove(int current_state, char c); // 状态转移函数
+int smove(int current_state, char c);      // 状态转移函数
+TokenType get_final_state_type(int state); // 返回终态种类
 
 #endif // DFA_HPP
