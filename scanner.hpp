@@ -6,10 +6,10 @@
 #include <fstream>
 #include <vector>
 #include <math.h>
+// #include <unordered_map>
 
 using std::ifstream;
 using std::string;
-using std::vector;
 
 enum class TokenType // 枚举记号类型
 {
@@ -67,35 +67,36 @@ public:
     {
         value.func_ptr = fp;
     };
+    // void print() { printf("%s %s\n", type, name.c_str()); };
 };
 
-static const Token TOKENTABLE[] = {
-    {TokenType::END, "END"},
-    {TokenType::ERROR, "ERROR"},
-    {TokenType::T, "T"},
-    {TokenType::ORIGIN, "ORIGIN"},
-    {TokenType::SCALE, "SCALE"},
-    {TokenType::ROTATE, "ROTATE"},
-    {TokenType::IS, "IS"},
-    {TokenType::FROM, "FROM"},
-    {TokenType::TO, "TO"},
-    {TokenType::STEP, "STEP"},
-    {TokenType::FOR, "FOR"},
-    {TokenType::DRAW, "DRAW"},
-    /* 以下均在math.h中 */
-    {TokenType::CONST_ID, "PI", M_PI},
-    {TokenType::CONST_ID, "E", M_E},
-    {TokenType::FUNC, "SIN", sin},
-    {TokenType::FUNC, "COS", cos},
-    {TokenType::FUNC, "TAN", tan},
-    {TokenType::FUNC, "LN", log},
-    {TokenType::FUNC, "EXP", exp},
-    {TokenType::FUNC, "SQRT", sqrt},
-};
+// static const std::unordered_map<TokenType, Token> TOKENTABLE = {
+//     {TokenType::END, {TokenType::END, "END"}},
+//     {TokenType::ERROR, {TokenType::ERROR, "ERROR"}},
+//     {TokenType::T, {TokenType::T, "T"}},
+//     {TokenType::ORIGIN, {TokenType::ORIGIN, "ORIGIN"}},
+//     {TokenType::SCALE, {TokenType::SCALE, "SCALE"}},
+//     {TokenType::ROTATE, {TokenType::ROTATE, "ROTATE"}},
+//     {TokenType::IS, {TokenType::IS, "IS"}},
+//     {TokenType::FROM, {TokenType::FROM, "FROM"}},
+//     {TokenType::TO, {TokenType::TO, "TO"}},
+//     {TokenType::STEP, "STEP"},
+//     {TokenType::FOR, "FOR"},
+//     {TokenType::DRAW, "DRAW"},
+//     /* 以下均在math.h中 */
+//     {TokenType::CONST_ID, "PI", M_PI},
+//     {TokenType::CONST_ID, "E", M_E},
+//     {TokenType::FUNC, "SIN", sin},
+//     {TokenType::FUNC, "COS", cos},
+//     {TokenType::FUNC, "TAN", tan},
+//     {TokenType::FUNC, "LN", log},
+//     {TokenType::FUNC, "EXP", exp},
+//     {TokenType::FUNC, "SQRT", sqrt},
+// };
 
 class Buffer
 {
-    vector<char> buffer;
+    std::vector<char> buffer;
     int head;
     int max_size;
     int current_size;
@@ -122,7 +123,7 @@ public:
 
 class Scanner
 {
-    vector<Token> tokens;
+    std::vector<Token> tokens;
     Buffer &buffer;
 
 public:
