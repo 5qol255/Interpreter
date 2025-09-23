@@ -3,4 +3,6 @@
 .vscode/tasks.json
 .vscode/launch.json
 test.exe
+test.cpp
+test.txt
 a.exe

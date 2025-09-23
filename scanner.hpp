@@ -5,10 +5,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
-#include <math.h>
-// #include <unordered_map>
 
-using std::ifstream;
 using std::string;
 
 enum class TokenType // 枚举记号类型
@@ -100,21 +97,20 @@ class Buffer
     int head;
     int max_size;
     int current_size;
-    string filepath;
-    ifstream file;
+    std::ifstream file;
     std::streampos start_pos;
-    bool eof;
-    void fill_buffer(ifstream &input, std::streampos &pos, int n = 4095);
+    bool closed;
+    void fill_buffer();
 
 public:
     Buffer(const string &path, int size = 4096)
-        : head(0), max_size(size), current_size(0), eof(false),
-          buffer(size), filepath(path), start_pos(std::streampos(0))
+        : head(0), max_size(size), current_size(0), closed(false),
+          buffer(size), start_pos(std::streampos(0))
     {
-        file.open(filepath, std::ios::in);
+        file.open(path, std::ios::in);
         if (!file.is_open())
-            throw std::runtime_error("Failed to open file: " + filepath);
-        fill_buffer(file, start_pos, 4096);
+            throw std::runtime_error("Failed to open file: " + path);
+        fill_buffer(); // 填充缓冲区
     };
     int get_data(); // 返回int兼容EOF
     void back_data();
