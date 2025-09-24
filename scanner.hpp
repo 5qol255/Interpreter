@@ -119,11 +119,10 @@ public:
 
 class Scanner
 {
-    std::vector<Token> tokens;
     Buffer &buffer;
 
 public:
-    Scanner(Buffer &buf) : tokens(), buffer(buf) {};
+    Scanner(Buffer &buf) : buffer(buf) {};
     Token getToken(); // 获取下一个记号
 };
 
