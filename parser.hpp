@@ -24,7 +24,6 @@ class ParseTree
     };
 
 public:
-    ParseTree *root;
     TokenType token_type;
     union
     {
@@ -33,34 +32,38 @@ public:
         double r_value;
         double *l_value;
     } content;
-    ParseTree() : root(nullptr) {};
-    void make_tree();
-    ParseTree *make_node(TokenType t, ParseTree *l, ParseTree *r);
-    ParseTree *make_node(TokenType t, ParseTree *c, double (*fp)(double));
-    ParseTree *make_node(TokenType t, double v);
+    ParseTree(TokenType t) : token_type(t) {};
+    ParseTree(TokenType t, ParseTree *l, ParseTree *r);
+    ParseTree(TokenType t, ParseTree *c, double (*fp)(double));
+    ParseTree(TokenType t, double v);
 };
 
 class Parser
 {
     Scanner scanner;
+    Token token;
     // parsing functions
-    void program(Token &);
-    void statement(Token &);
-    void for_statement(Token &);
-    void origin_statement(Token &);
-    void scale_statement(Token &);
-    void rotate_statement(Token &);
+    void program();
+    void statement();
+    void for_statement();
+    void origin_statement();
+    void scale_statement();
+    void rotate_statement();
     ParseTree *expression();
     ParseTree *term();
     ParseTree *factor();
     ParseTree *component();
     ParseTree *atom();
     // helper functions
-    bool match_token(Token &tk, TokenType t) { return tk.type == t; }
+    void match_token(TokenType t);
     // error handling
-    void error(Token &tk, string msg = "")
+    void error(const Token &tk, const string &msg = "")
     {
         throw std::runtime_error("Parser Error: " + msg + " at '" + tk.name + "'");
+    };
+    void error(const string &msg = "")
+    {
+        throw std::runtime_error("Parser Error: " + msg);
     };
 
 public:

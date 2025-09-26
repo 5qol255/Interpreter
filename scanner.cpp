@@ -8,32 +8,6 @@
 
 using std::string;
 
-class Buffer
-{
-    std::vector<char> buffer;
-    int head;
-    int max_size;
-    int current_size;
-    std::ifstream file;
-    std::streampos start_pos;
-    bool closed;
-    void fill_buffer();
-
-public:
-    Buffer(const string &path, int size = 4096)
-        : head(0), max_size(size), current_size(0), closed(false),
-          buffer(size), start_pos(std::streampos(0))
-    {
-        file.open(path, std::ios::in);
-        if (!file.is_open())
-            throw std::runtime_error("Failed to open file: " + path);
-        fill_buffer(); // 填充缓冲区
-    };
-    int get_data(); // 返回int兼容EOF
-    void back_data();
-    void clear();
-};
-
 int Buffer::get_data()
 {
     // printf("%d\n", current_size);

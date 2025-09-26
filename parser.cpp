@@ -1,90 +1,147 @@
 #include "parser.hpp"
 
-void ParseTree::make_tree()
+void Parser::match_token(TokenType t)
 {
-    root = new ParseTree();
-}
-
-ParseTree *ParseTree::make_node(TokenType t, ParseTree *l, ParseTree *r)
-{
-    auto new_node = new ParseTree();
-    new_node->token_type = t;
-    new_node->content.operator_.left = l;
-    new_node->content.operator_.right = r;
-    return new_node;
-}
-
-ParseTree *ParseTree::make_node(TokenType t, ParseTree *c, double (*fp)(double))
-{
-    auto new_node = new ParseTree();
-    new_node->token_type = t;
-    new_node->content.function.child = c;
-    new_node->content.function.fp = fp;
-    return new_node;
-}
-
-ParseTree *ParseTree::make_node(TokenType t, double v)
-{
-    auto new_node = new ParseTree();
-    new_node->token_type = t;
-    if (t == TokenType::CONST_ID)
-        new_node->content.r_value = v;
-    else
-        new_node->content.l_value = &T;
-    return new_node;
+    if (token.type != t)
+        error(token, "unexpected token, expect '" + std::to_string(int(t)) + "'");
+    token = scanner.getToken();
 }
 
 void Parser::run()
 {
-    auto token = scanner.getToken();
-    program(token);
+    token = scanner.getToken();
+    program();
 }
 
-void Parser::program(Token &tk)
+void Parser::program()
 {
-    while (tk.type != TokenType::END)
+    while (token.type != TokenType::END)
     {
-        statement(tk);
-        if (!match_token(tk, TokenType::SEMICO))
-            error(tk, "expect ';'");
+        statement();
+        match_token(TokenType::SEMICO);
     }
 }
 
-void Parser::statement(Token &tk)
+void Parser::statement()
 {
-    switch (tk.type)
+    switch (token.type)
     {
     case TokenType::FOR:
-        for_statement(tk);
+        for_statement();
         break;
     case TokenType::ORIGIN:
-        origin_statement(tk);
+        origin_statement();
         break;
     case TokenType::SCALE:
-        scale_statement(tk);
+        scale_statement();
         break;
     case TokenType::ROTATE:
-        rotate_statement(tk);
+        rotate_statement();
         break;
     default:
-        error(tk, "invalid statement");
+        error(token, "invalid statement");
         break;
     }
 }
 
-void Parser::for_statement(Token &tk)
+void Parser::for_statement()
 {
-    if (!match_token(tk, TokenType::FOR))
-        error(tk, "expect 'FOR'");
-    auto token = tk;
+    ParseTree *start_ptr, *end_ptr, *step_ptr, *x_ptr, *y_ptr;
+    match_token(TokenType::FOR);
+    match_token(TokenType::T);
+    match_token(TokenType::FROM);
+    start_ptr = expression();
+    match_token(TokenType::TO);
+    end_ptr = expression();
+    match_token(TokenType::STEP);
+    step_ptr = expression();
+    match_token(TokenType::DRAW);
+    match_token(TokenType::L_BRACKET);
+    x_ptr = expression();
+    match_token(TokenType::COMMA);
+    y_ptr = expression();
+    match_token(TokenType::R_BRACKET);
 }
 
-void Parser::origin_statement(Token &tk) {}
-void Parser::scale_statement(Token &tk) {}
-void Parser::rotate_statement(Token &tk) {}
+void Parser::origin_statement()
+{
+    ParseTree *x_ptr, *y_ptr;
+    match_token(TokenType::ORIGIN);
+    match_token(TokenType::IS);
+    match_token(TokenType::L_BRACKET);
+    x_ptr = expression();
+    match_token(TokenType::COMMA);
+    y_ptr = expression();
+    match_token(TokenType::R_BRACKET);
+}
 
-ParseTree *Parser::expression() {}
-ParseTree *Parser::term() {}
-ParseTree *Parser::factor() {}
-ParseTree *Parser::component() {}
-ParseTree *Parser::atom() {}
+void Parser::scale_statement()
+{
+    ParseTree *x_ptr, *y_ptr;
+    match_token(TokenType::SCALE);
+    match_token(TokenType::IS);
+    match_token(TokenType::L_BRACKET);
+    x_ptr = expression();
+    match_token(TokenType::COMMA);
+    y_ptr = expression();
+    match_token(TokenType::R_BRACKET);
+}
+
+void Parser::rotate_statement()
+{
+    ParseTree *angle_ptr;
+    match_token(TokenType::ROTATE);
+    match_token(TokenType::IS);
+    angle_ptr = expression();
+}
+
+ParseTree *Parser::expression()
+{
+    ParseTree *left, *right;
+    TokenType op;
+    left = term();
+    while (token.type == TokenType::PLUS || token.type == TokenType::MINUS)
+    {
+        op = token.type;
+        match_token(op);
+        right = term();
+        left = left->make_node(op, left, right);
+    }
+    return left;
+}
+
+ParseTree *Parser::term()
+{
+    ParseTree *left, *right;
+    TokenType op;
+    left = factor();
+    while (token.type == TokenType::MUL || token.type == TokenType::DIV)
+    {
+        op = token.type;
+        match_token(op);
+        right = factor();
+        left = left->make_node(op, left, right);
+    }
+    return left;
+}
+
+ParseTree *Parser::factor()
+{
+}
+
+ParseTree *Parser::component()
+{
+}
+
+ParseTree *Parser::atom()
+{
+    switch (token.type)
+    {
+    case TokenType::CONST_ID:
+        return ParseTree().make_node(TokenType::CONST_ID, token.value.v);
+        break;
+
+    default:
+        break;
+    }
+}
