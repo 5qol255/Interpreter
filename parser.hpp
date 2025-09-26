@@ -13,29 +13,92 @@ static double T;
 
 class ParseTree
 {
-    struct op_node
-    {
-        ParseTree *left, *right;
-    };
-    struct func_node
-    {
-        ParseTree *child;
-        double (*fp)(double);
-    };
-
 public:
-    TokenType token_type;
+    enum NodeType
+    {
+        CONST_NODE,
+        VAR_NODE,
+        UNARY_OP_NODE,
+        BINARY_OP_NODE,
+        FUNC_CALL_NODE
+    } type;
     union
     {
-        op_node operator_;
-        func_node function;
-        double r_value;
-        double *l_value;
-    } content;
-    ParseTree(TokenType t) : token_type(t) {};
-    ParseTree(TokenType t, ParseTree *l, ParseTree *r);
-    ParseTree(TokenType t, ParseTree *c, double (*fp)(double));
-    ParseTree(TokenType t, double v);
+        double const_val;
+        struct
+        {
+            TokenType op;
+            ParseTree *child;
+        } unary_op;
+        struct
+        {
+            TokenType op;
+            ParseTree *left;
+            ParseTree *right;
+        } binary_op;
+        struct
+        {
+            double (*func_ptr)(double);
+            ParseTree *arg;
+        } func_call;
+    } data;
+
+    // 构造函数
+    ParseTree(double value) : type(CONST_NODE)
+    {
+        data.const_val = value;
+    }
+
+    ParseTree(NodeType node_type, TokenType op, ParseTree *child) : type(node_type)
+    {
+        if (node_type == UNARY_OP_NODE)
+        {
+            data.unary_op.op = op;
+            data.unary_op.child = child;
+        }
+    }
+
+    ParseTree(NodeType node_type, TokenType op, ParseTree *left, ParseTree *right) : type(node_type)
+    {
+        if (node_type == BINARY_OP_NODE)
+        {
+            data.binary_op.op = op;
+            data.binary_op.left = left;
+            data.binary_op.right = right;
+        }
+    }
+
+    ParseTree(double (*func)(double), ParseTree *arg) : type(FUNC_CALL_NODE)
+    {
+        data.func_call.func_ptr = func;
+        data.func_call.arg = arg;
+    }
+
+    // 变量节点构造函数
+    ParseTree() : type(VAR_NODE) {}
+
+    // 析构函数
+    ~ParseTree()
+    {
+        // 根据节点类型释放子节点
+        switch (type)
+        {
+        case UNARY_OP_NODE:
+            delete data.unary_op.child;
+            break;
+        case BINARY_OP_NODE:
+            delete data.binary_op.left;
+            delete data.binary_op.right;
+            break;
+        case FUNC_CALL_NODE:
+            delete data.func_call.arg;
+            break;
+        case CONST_NODE:
+        case VAR_NODE:
+            // 没有需要释放的子节点
+            break;
+        }
+    }
 };
 
 class Parser
