@@ -11,31 +11,60 @@ using std::string;
 
 static double T;
 
-class ParseTree
+class TreeNode
 {
-    struct op_node
-    {
-        ParseTree *left, *right;
-    };
-    struct func_node
-    {
-        ParseTree *child;
-        double (*fp)(double);
-    };
-
 public:
-    TokenType token_type;
-    union
+    enum NodeType
     {
-        op_node operator_;
-        func_node function;
+        OP,
+        FUNC,
+        CONST,
+        VAR,
+    } type;
+    union Content
+    {
+        struct op_node
+        {
+            TreeNode *left, *right;
+        } operator_;
+        struct func_node
+        {
+            TreeNode *child;
+            double (*fp)(double);
+        } function;
         double r_value;
         double *l_value;
     } content;
-    ParseTree(TokenType t) : token_type(t) {};
-    ParseTree(TokenType t, ParseTree *l, ParseTree *r);
-    ParseTree(TokenType t, ParseTree *c, double (*fp)(double));
-    ParseTree(TokenType t, double v);
+
+    TreeNode(TreeNode *l, TreeNode *r) : type(OP)
+    {
+        content.operator_.left = l;
+        content.operator_.right = r;
+    };
+    TreeNode(double (*fp)(double)) : type(FUNC)
+    {
+        content.function.fp = fp;
+    };
+    TreeNode(double v) : type(CONST)
+    {
+        content.r_value = v;
+    };
+    TreeNode(double *p) : type(VAR)
+    {
+        content.l_value = p;
+    };
+    ~TreeNode()
+    {
+        if (type == OP)
+        {
+            delete content.operator_.left;
+            delete content.operator_.right;
+        }
+        else if (type == FUNC)
+        {
+            delete content.function.child;
+        }
+    };
 };
 
 class Parser
@@ -49,11 +78,11 @@ class Parser
     void origin_statement();
     void scale_statement();
     void rotate_statement();
-    ParseTree *expression();
-    ParseTree *term();
-    ParseTree *factor();
-    ParseTree *component();
-    ParseTree *atom();
+    TreeNode *expression();
+    TreeNode *term();
+    TreeNode *factor();
+    TreeNode *component();
+    TreeNode *atom();
     // helper functions
     void match_token(TokenType t);
     // error handling
