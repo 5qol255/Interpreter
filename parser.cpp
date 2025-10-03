@@ -1,4 +1,20 @@
 #include "parser.hpp"
+#include <unordered_map>
+#include <cmath>
+
+using std::string;
+
+// 变量T的定义
+double T;
+// 函数表
+const std::unordered_map<string, double (*)(double)> func_table = {
+    {"SIN", sin},
+    {"COS", cos},
+    {"TAN", tan},
+    {"LN", log},
+    {"EXP", exp},
+    {"SQRT", sqrt},
+};
 
 void Parser::match_token(TokenType t)
 {
@@ -154,14 +170,19 @@ TreeNode *Parser::atom()
     switch (token.type)
     {
     case TokenType::CONST_ID:
+    {
         node = new TreeNode(token.value.v);
         match_token(TokenType::CONST_ID);
         break;
+    }
     case TokenType::T:
+    {
         node = new TreeNode(&T); // T是全局变量
         match_token(TokenType::T);
         break;
+    }
     case TokenType::FUNC:
+    {
         // 获取函数指针
         double (*func_ptr)(double) = token.value.func_ptr;
         match_token(TokenType::FUNC);
@@ -172,14 +193,19 @@ TreeNode *Parser::atom()
         // 需要将参数设置为函数的子节点
         node->content.function.child = arg;
         break;
+    }
     case TokenType::L_BRACKET:
+    {
         match_token(TokenType::L_BRACKET);
         node = expression();
         match_token(TokenType::R_BRACKET);
         break;
+    }
     default:
+    {
         error(token, "unexpected token in atom");
         break;
+    }
     }
     return node;
 }

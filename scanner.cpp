@@ -5,6 +5,7 @@
 #include <fstream>
 #include <cctype>  // for isspace()
 #include <cstdlib> // for stod()
+#include <cmath>   // for math functions
 
 using std::string;
 
@@ -242,6 +243,15 @@ const std::unordered_map<int, std::unordered_map<char, int>> state_transition_ta
         }},
 }; // 状态转移表
 
+const std::unordered_map<string, double (*)(double)> func_table = {
+    {"SIN", sin},
+    {"COS", cos},
+    {"TAN", tan},
+    {"LN", log},
+    {"EXP", exp},
+    {"SQRT", sqrt},
+}; // 函数表
+
 int smove(int current_state, char c)
 {
     try // 尝试状态转移
@@ -285,7 +295,7 @@ Token Scanner::getToken()
             buffer.back_data(); // 回退字符
             break;              // 退出循环
         }
-        token.name += char(std::toupper(ch)); // 追加字符
+        token.name += char(std::toupper(ch)); // 追加字符（大写）
         state = next_state;                   // 更新状态
         ch = buffer.get_data();               // 获取下一个字符
         if (ch == EOF)                        // 文件结束
@@ -296,8 +306,49 @@ Token Scanner::getToken()
     switch (token.type)
     {
     case TokenType::ID:
+    {
+        // 判断是何种关键字，由于之前已经改成大写了，直接比较即可
+        if (token.name == "T")
+            token.type = TokenType::T;
+        else if (token.name == "ORIGIN")
+            token.type = TokenType::ORIGIN;
+        else if (token.name == "SCALE")
+            token.type = TokenType::SCALE;
+        else if (token.name == "ROTATE")
+            token.type = TokenType::ROTATE;
+        else if (token.name == "IS")
+            token.type = TokenType::IS;
+        else if (token.name == "FROM")
+            token.type = TokenType::FROM;
+        else if (token.name == "TO")
+            token.type = TokenType::TO;
+        else if (token.name == "STEP")
+            token.type = TokenType::STEP;
+        else if (token.name == "FOR")
+            token.type = TokenType::FOR;
+        else if (token.name == "DRAW")
+            token.type = TokenType::DRAW;
+        else if (token.name == "PI")
+        {
+            token.type = TokenType::CONST_ID;
+            token.value.v = M_PI;
+        }
+        else if (token.name == "E")
+        {
+            token.type = TokenType::CONST_ID;
+            token.value.v = M_E;
+        }
+        else if (func_table.find(token.name) != func_table.end())
+        {
+            token.type = TokenType::FUNC;
+            token.value.func_ptr = func_table.at(token.name);
+        }
+        else
+            token.type = TokenType::ERROR; // 无效标识符
         break;
+    }
     case TokenType::CONST_ID:
+        // 获取数值
         token.value.v = std::stod(token.name);
         break;
     case TokenType::COMMENT:

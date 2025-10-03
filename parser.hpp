@@ -9,7 +9,7 @@
 
 using std::string;
 
-static double T;
+extern double T;
 
 class TreeNode
 {
