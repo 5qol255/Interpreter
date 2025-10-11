@@ -100,4 +100,7 @@ public:
     void run();
 };
 
+// 测试用接口
+const string &type2str(TokenType t);
+
 #endif

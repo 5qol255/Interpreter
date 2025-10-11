@@ -6,21 +6,51 @@ using std::string;
 
 // 变量T的定义
 double T;
-// 函数表
-const std::unordered_map<string, double (*)(double)> func_table = {
-    {"SIN", sin},
-    {"COS", cos},
-    {"TAN", tan},
-    {"LN", log},
-    {"EXP", exp},
-    {"SQRT", sqrt},
-};
+
+const string &type2str(TokenType t)
+{
+    // TokenType到字符串的映射
+    static const std::unordered_map<TokenType, const std::string>
+        tokentype_2_string = {
+            {TokenType::ID, "ID"},           // never used
+            {TokenType::COMMENT, "COMMENT"}, // never used
+            {TokenType::CONST_ID, "CONST_ID"},
+            {TokenType::FUNC, "FUNC"},
+            {TokenType::T, "T"},
+            /* 分隔符 */
+            {TokenType::SEMICO, "SEMICO"},       // ;
+            {TokenType::L_BRACKET, "L_BRACKET"}, // (
+            {TokenType::R_BRACKET, "R_BRACKET"}, // )
+            {TokenType::COMMA, "COMMA"},         // ,
+            /* 运算符 */
+            {TokenType::PLUS, "PLUS"},   // +
+            {TokenType::MINUS, "MINUS"}, // -
+            {TokenType::MUL, "MUL"},     // *
+            {TokenType::DIV, "DIV"},     // /
+            {TokenType::POWER, "POWER"}, // **
+            /* 关键字 */
+            {TokenType::ORIGIN, "ORIGIN"}, // 原点
+            {TokenType::SCALE, "SCALE"},   // 缩放
+            {TokenType::ROTATE, "ROTATE"}, // 旋转
+            {TokenType::IS, "IS"},         // 是
+            {TokenType::FROM, "FROM"},     // 从
+            {TokenType::TO, "TO"},         // 到
+            {TokenType::STEP, "STEP"},     // 步长
+            {TokenType::FOR, "FOR"},       // 循环
+            {TokenType::DRAW, "DRAW"},     // 绘制
+            /* 其他 */
+            {TokenType::END, "END"},    // 结束符
+            {TokenType::ERROR, "ERROR"} // 非法记号
+        };
+    return tokentype_2_string.at(t);
+}
 
 void Parser::match_token(TokenType t)
 {
     if (token.type != t)
-        error(token, "unexpected token, expect '" + std::to_string(int(t)) + "'");
-    token = scanner.getToken();
+        error(token, "unexpected token, expect '" + type2str(t) + "'");
+    else
+        token = scanner.getToken();
 }
 
 void Parser::run()
@@ -62,53 +92,53 @@ void Parser::statement()
 
 void Parser::for_statement()
 {
-    TreeNode *start_ptr, *end_ptr, *step_ptr, *x_ptr, *y_ptr;
     match_token(TokenType::FOR);
     match_token(TokenType::T);
     match_token(TokenType::FROM);
-    start_ptr = expression();
+    TreeNode *start_ptr = expression();
     match_token(TokenType::TO);
-    end_ptr = expression();
+    TreeNode *end_ptr = expression();
     match_token(TokenType::STEP);
-    step_ptr = expression();
+    TreeNode *step_ptr = expression();
     match_token(TokenType::DRAW);
     match_token(TokenType::L_BRACKET);
-    x_ptr = expression();
+    TreeNode *x_ptr = expression();
     match_token(TokenType::COMMA);
-    y_ptr = expression();
+    TreeNode *y_ptr = expression();
     match_token(TokenType::R_BRACKET);
+    // delete start_ptr, end_ptr, step_ptr, x_ptr, y_ptr;
 }
 
 void Parser::origin_statement()
 {
-    TreeNode *x_ptr, *y_ptr;
     match_token(TokenType::ORIGIN);
     match_token(TokenType::IS);
     match_token(TokenType::L_BRACKET);
-    x_ptr = expression();
+    TreeNode *x_ptr = expression();
     match_token(TokenType::COMMA);
-    y_ptr = expression();
+    TreeNode *y_ptr = expression();
     match_token(TokenType::R_BRACKET);
+    // delete x_ptr, y_ptr;
 }
 
 void Parser::scale_statement()
 {
-    TreeNode *x_ptr, *y_ptr;
     match_token(TokenType::SCALE);
     match_token(TokenType::IS);
     match_token(TokenType::L_BRACKET);
-    x_ptr = expression();
+    TreeNode *x_ptr = expression();
     match_token(TokenType::COMMA);
-    y_ptr = expression();
+    TreeNode *y_ptr = expression();
     match_token(TokenType::R_BRACKET);
+    // delete x_ptr, y_ptr;
 }
 
 void Parser::rotate_statement()
 {
-    TreeNode *angle_ptr;
     match_token(TokenType::ROTATE);
     match_token(TokenType::IS);
-    angle_ptr = expression();
+    TreeNode *angle_ptr = expression();
+    // delete angle_ptr;
 }
 
 TreeNode *Parser::expression()
@@ -166,20 +196,17 @@ TreeNode *Parser::component()
 
 TreeNode *Parser::atom()
 {
-    TreeNode *node = nullptr;
     switch (token.type)
     {
     case TokenType::CONST_ID:
     {
-        node = new TreeNode(token.value.v);
         match_token(TokenType::CONST_ID);
-        break;
+        return new TreeNode(token.value.v);
     }
     case TokenType::T:
     {
-        node = new TreeNode(&T); // T是全局变量
         match_token(TokenType::T);
-        break;
+        return new TreeNode(&T);
     }
     case TokenType::FUNC:
     {
@@ -189,23 +216,20 @@ TreeNode *Parser::atom()
         match_token(TokenType::L_BRACKET);
         TreeNode *arg = expression();
         match_token(TokenType::R_BRACKET);
-        node = new TreeNode(func_ptr);
+        TreeNode *node = new TreeNode(func_ptr);
         // 需要将参数设置为函数的子节点
         node->content.function.child = arg;
-        break;
+        return node;
     }
     case TokenType::L_BRACKET:
     {
         match_token(TokenType::L_BRACKET);
-        node = expression();
+        TreeNode *node = expression();
         match_token(TokenType::R_BRACKET);
-        break;
+        return node;
     }
     default:
-    {
         error(token, "unexpected token in atom");
-        break;
+        return nullptr; // never reach here
     }
-    }
-    return node;
 }
