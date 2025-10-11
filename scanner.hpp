@@ -53,17 +53,7 @@ public:
         double (*func_ptr)(double);
     } value;
     /* 构造函数 */
-    Token() {};
-    Token(const Token &token) : type(token.type), name(token.name), value(token.value) {};
-    Token(TokenType t, const char n[]) : type(t), name(n) {};
-    Token(TokenType t, const char n[], double v) : Token(t, n)
-    {
-        value.v = v;
-    };
-    Token(TokenType t, const char n[], double (*fp)(double)) : Token(t, n)
-    {
-        value.func_ptr = fp;
-    };
+    Token(TokenType t = TokenType::ERROR, const char n[] = "") : type(t), name(n) {};
     // void print() { printf("%s %s\n", type, name.c_str()); };
 };
 
@@ -119,11 +109,10 @@ public:
 
 class Scanner
 {
-    std::vector<Token> tokens;
-    Buffer &buffer;
+    Buffer buffer;
 
 public:
-    Scanner(Buffer &buf) : tokens(), buffer(buf) {};
+    Scanner(string filepath, int size = 4096) : buffer(filepath, size) {};
     Token getToken(); // 获取下一个记号
 };
 
