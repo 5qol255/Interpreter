@@ -4,33 +4,55 @@
 
 using std::string;
 
-// 变量T的定义
+/* 变量T的定义 */
 double T;
-// 函数表
-const std::unordered_map<string, double (*)(double)> func_table = {
-    {"SIN", sin},
-    {"COS", cos},
-    {"TAN", tan},
-    {"LN", log},
-    {"EXP", exp},
-    {"SQRT", sqrt},
+/* 辅助变量 */
+Token token;
+const std::unordered_map<TokenType, string> tokentype2str = {
+    {TokenType::PLUS, "PLUS"},
+    {TokenType::MINUS, "MINUS"},
+    {TokenType::MUL, "MUL"},
+    {TokenType::DIV, "DIV"},
+    {TokenType::POWER, "POWER"},
+    {TokenType::L_BRACKET, "L_BRACKET"},
+    {TokenType::R_BRACKET, "R_BRACKET"},
+    {TokenType::COMMA, "COMMA"},
+    {TokenType::SEMICO, "SEMICO"},
+    {TokenType::ID, "ID"},
+    {TokenType::END, "END"},
+    {TokenType::ERROR, "ERROR"},
+    {TokenType::T, "T"},
+    {TokenType::ORIGIN, "ORIGIN"},
+    {TokenType::SCALE, "SCALE"},
+    {TokenType::ROTATE, "ROTATE"},
+    {TokenType::IS, "IS"},
+    {TokenType::FROM, "FROM"},
+    {TokenType::TO, "TO"},
+    {TokenType::STEP, "STEP"},
+    {TokenType::FOR, "FOR"},
+    {TokenType::DRAW, "DRAW"},
+    {TokenType::CONST_ID, "CONST_ID"},
+    {TokenType::FUNC, "FUNCTION"},
 };
+
+void Parser::error(const Token &tk, const string &msg)
+{
+    static string message;
+    message = "Parser Error: " + msg + "\nprovided token: " + tk.name + " (" + tokentype2str.at(tk.type) + ")\n";
+    throw std::runtime_error(message);
+}
 
 void Parser::match_token(TokenType t)
 {
-    if (token.type != t)
-        error(token, "unexpected token, expect '" + std::to_string(int(t)) + "'");
-    token = scanner.getToken();
-}
-
-void Parser::run()
-{
-    token = scanner.getToken();
-    program();
+    if (token.type == t)
+        token = scanner.getToken();
+    else
+        Parser::error(token, "expect " + tokentype2str.at(t));
 }
 
 void Parser::program()
 {
+    token = scanner.getToken(); // 初始化token
     while (token.type != TokenType::END)
     {
         statement();
@@ -40,24 +62,16 @@ void Parser::program()
 
 void Parser::statement()
 {
-    switch (token.type)
-    {
-    case TokenType::FOR:
+    if (token.type == TokenType::FOR)
         for_statement();
-        break;
-    case TokenType::ORIGIN:
+    else if (token.type == TokenType::ORIGIN)
         origin_statement();
-        break;
-    case TokenType::SCALE:
+    else if (token.type == TokenType::SCALE)
         scale_statement();
-        break;
-    case TokenType::ROTATE:
+    else if (token.type == TokenType::ROTATE)
         rotate_statement();
-        break;
-    default:
-        error(token, "invalid statement");
-        break;
-    }
+    else
+        Parser::error(token, "invalid statement");
 }
 
 void Parser::for_statement()
@@ -113,99 +127,93 @@ void Parser::rotate_statement()
 
 TreeNode *Parser::expression()
 {
-    TreeNode *left = term();
+    TreeNode *left, *right;
+    left = term();
     while (token.type == TokenType::PLUS || token.type == TokenType::MINUS)
     {
-        TokenType op = token.type;
-        match_token(op);
-        TreeNode *right = term();
-        left = new TreeNode(left, right);
+        match_token(token.type);
+        right = term();
+        left = new TreeNode(token.type, left, right);
     }
     return left;
 }
 
 TreeNode *Parser::term()
 {
-    TreeNode *left = factor();
+    TreeNode *left, *right;
+    left = factor();
     while (token.type == TokenType::MUL || token.type == TokenType::DIV)
     {
-        TokenType op = token.type;
-        match_token(op);
-        TreeNode *right = factor();
-        left = new TreeNode(left, right);
+        match_token(token.type);
+        right = factor();
+        left = new TreeNode(token.type, left, right);
     }
     return left;
 }
 
 TreeNode *Parser::factor()
 {
+    TreeNode *node;
     if (token.type == TokenType::PLUS || token.type == TokenType::MINUS)
     {
-        TokenType op = token.type;
-        match_token(op);
-        TreeNode *child = factor();
-        TreeNode *zero = new TreeNode(0.0);
-        return new TreeNode(zero, child);
+        auto op = token.type;
+        match_token(token.type);
+        if (op == TokenType::MINUS)
+        {
+            auto zero_node = new TreeNode(0.0);
+            node = new TreeNode(token.type, zero_node, component());
+        }
+        else
+            node = component();
     }
     else
-        return component();
+        node = component();
+    return node;
 }
 
 TreeNode *Parser::component()
 {
-    TreeNode *base = atom();
+    TreeNode *left, *right;
+    left = atom();
     if (token.type == TokenType::POWER)
     {
+        auto op = token.type;
         match_token(TokenType::POWER);
-        TreeNode *exponent = component();
-        return new TreeNode(base, exponent);
+        right = component();
+        left = new TreeNode(TokenType::POWER, left, right);
     }
-    else
-        return base;
+    return left;
 }
 
 TreeNode *Parser::atom()
 {
-    TreeNode *node = nullptr;
-    switch (token.type)
-    {
-    case TokenType::CONST_ID:
+    TreeNode *node;
+    if (token.type == TokenType::CONST_ID)
     {
         node = new TreeNode(token.value.v);
         match_token(TokenType::CONST_ID);
-        break;
     }
-    case TokenType::T:
+    else if (token.type == TokenType::T)
     {
-        node = new TreeNode(&T); // T是全局变量
+        node = new TreeNode(&T);
         match_token(TokenType::T);
-        break;
     }
-    case TokenType::FUNC:
+    else if (token.type == TokenType::FUNC)
     {
-        // 获取函数指针
-        double (*func_ptr)(double) = token.value.func_ptr;
+        node = new TreeNode(token.value.func_ptr);
         match_token(TokenType::FUNC);
         match_token(TokenType::L_BRACKET);
-        TreeNode *arg = expression();
+        node->right = expression(); // 函数的参数挂在右节点
         match_token(TokenType::R_BRACKET);
-        node = new TreeNode(func_ptr);
-        // 需要将参数设置为函数的子节点
-        node->content.function.child = arg;
-        break;
+        return node;
     }
-    case TokenType::L_BRACKET:
+    else if (token.type == TokenType::L_BRACKET)
     {
         match_token(TokenType::L_BRACKET);
         node = expression();
         match_token(TokenType::R_BRACKET);
-        break;
     }
-    default:
-    {
-        error(token, "unexpected token in atom");
-        break;
-    }
-    }
+    else
+        error(token, "invalid atom");
     return node;
 }

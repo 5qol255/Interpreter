@@ -54,32 +54,9 @@ public:
     } value;
     /* 构造函数 */
     Token(TokenType t = TokenType::ERROR, const char n[] = "") : type(t), name(n) {};
+    const string &to_str() const { return name; };
     // void print() { printf("%s %s\n", type, name.c_str()); };
 };
-
-// static const std::unordered_map<TokenType, Token> TOKENTABLE = {
-//     {TokenType::END, {TokenType::END, "END"}},
-//     {TokenType::ERROR, {TokenType::ERROR, "ERROR"}},
-//     {TokenType::T, {TokenType::T, "T"}},
-//     {TokenType::ORIGIN, {TokenType::ORIGIN, "ORIGIN"}},
-//     {TokenType::SCALE, {TokenType::SCALE, "SCALE"}},
-//     {TokenType::ROTATE, {TokenType::ROTATE, "ROTATE"}},
-//     {TokenType::IS, {TokenType::IS, "IS"}},
-//     {TokenType::FROM, {TokenType::FROM, "FROM"}},
-//     {TokenType::TO, {TokenType::TO, "TO"}},
-//     {TokenType::STEP, "STEP"},
-//     {TokenType::FOR, "FOR"},
-//     {TokenType::DRAW, "DRAW"},
-//     /* 以下均在math.h中 */
-//     {TokenType::CONST_ID, "PI", M_PI},
-//     {TokenType::CONST_ID, "E", M_E},
-//     {TokenType::FUNC, "SIN", sin},
-//     {TokenType::FUNC, "COS", cos},
-//     {TokenType::FUNC, "TAN", tan},
-//     {TokenType::FUNC, "LN", log},
-//     {TokenType::FUNC, "EXP", exp},
-//     {TokenType::FUNC, "SQRT", sqrt},
-// };
 
 class Buffer
 {

@@ -7,6 +7,9 @@
 #include <cstdlib> // for stod()
 #include <cmath>   // for math functions
 
+#define PI 3.14159265358979323846
+#define E 2.71828182845904523536
+
 using std::string;
 
 int Buffer::get_data()
@@ -331,12 +334,12 @@ Token Scanner::getToken()
         else if (token.name == "PI")
         {
             token.type = TokenType::CONST_ID;
-            token.value.v = M_PI;
+            token.value.v = PI;
         }
         else if (token.name == "E")
         {
             token.type = TokenType::CONST_ID;
-            token.value.v = M_E;
+            token.value.v = E;
         }
         else if (func_table.find(token.name) != func_table.end())
         {
