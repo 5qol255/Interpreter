@@ -83,53 +83,53 @@ void Parser::statement()
 
 void Parser::for_statement()
 {
-    TreeNode *start_ptr, *end_ptr, *step_ptr, *x_ptr, *y_ptr;
     match_token(TokenType::FOR);
     match_token(TokenType::T);
     match_token(TokenType::FROM);
-    start_ptr = expression();
+    TreeNode *start_ptr = expression();
     match_token(TokenType::TO);
-    end_ptr = expression();
+    TreeNode *end_ptr = expression();
     match_token(TokenType::STEP);
-    step_ptr = expression();
+    TreeNode *step_ptr = expression();
     match_token(TokenType::DRAW);
     match_token(TokenType::L_BRACKET);
-    x_ptr = expression();
+    TreeNode *x_ptr = expression();
     match_token(TokenType::COMMA);
-    y_ptr = expression();
+    TreeNode *y_ptr = expression();
     match_token(TokenType::R_BRACKET);
+    // delete start_ptr, end_ptr, step_ptr, x_ptr, y_ptr;
 }
 
 void Parser::origin_statement()
 {
-    TreeNode *x_ptr, *y_ptr;
     match_token(TokenType::ORIGIN);
     match_token(TokenType::IS);
     match_token(TokenType::L_BRACKET);
-    x_ptr = expression();
+    TreeNode *x_ptr = expression();
     match_token(TokenType::COMMA);
-    y_ptr = expression();
+    TreeNode *y_ptr = expression();
     match_token(TokenType::R_BRACKET);
+    // delete x_ptr, y_ptr;
 }
 
 void Parser::scale_statement()
 {
-    TreeNode *x_ptr, *y_ptr;
     match_token(TokenType::SCALE);
     match_token(TokenType::IS);
     match_token(TokenType::L_BRACKET);
-    x_ptr = expression();
+    TreeNode *x_ptr = expression();
     match_token(TokenType::COMMA);
-    y_ptr = expression();
+    TreeNode *y_ptr = expression();
     match_token(TokenType::R_BRACKET);
+    // delete x_ptr, y_ptr;
 }
 
 void Parser::rotate_statement()
 {
-    TreeNode *angle_ptr;
     match_token(TokenType::ROTATE);
     match_token(TokenType::IS);
-    angle_ptr = expression();
+    TreeNode *angle_ptr = expression();
+    // delete angle_ptr;
 }
 
 TreeNode *Parser::expression()
@@ -197,7 +197,6 @@ TreeNode *Parser::atom()
     TreeNode *node;
     if (token.type == TokenType::CONST_ID)
     {
-        node = new TreeNode(token.value.v);
         match_token(TokenType::CONST_ID);
     }
     else if (token.type == TokenType::T)
@@ -217,7 +216,7 @@ TreeNode *Parser::atom()
     else if (token.type == TokenType::L_BRACKET)
     {
         match_token(TokenType::L_BRACKET);
-        node = expression();
+        TreeNode *node = expression();
         match_token(TokenType::R_BRACKET);
     }
     else
