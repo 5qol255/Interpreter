@@ -38,7 +38,14 @@ const std::unordered_map<TokenType, string> tokentype2str = {
 void Parser::error(const Token &tk, const string &msg)
 {
     static string message;
-    message = "Parser Error: " + msg + "\nprovided token: " + tk.name + " (" + tokentype2str.at(tk.type) + ")\n";
+    message.clear();
+    message += "\nParser Error: ";
+    message += msg;
+    message += "\nprovided token: ";
+    message += tk.name;
+    message += " (";
+    message += tokentype2str.at(tk.type);
+    message += ')';
     throw std::runtime_error(message);
 }
 
