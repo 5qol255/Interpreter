@@ -14,7 +14,7 @@ extern double T;
 class TreeNode
 {
 public:
-    union a
+    union node_filling
     {
         TokenType op;           // 运算符
         double (*func)(double); // 函数指针
@@ -59,8 +59,5 @@ public:
     Parser(const string &filename, int n = 4096) : scanner(filename, n) {};
     void run() { program(); };
 };
-
-// 测试用接口
-const string &type2str(TokenType t);
 
 #endif
