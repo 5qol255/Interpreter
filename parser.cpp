@@ -56,7 +56,12 @@ void Parser::error(const Token &tk, const string &msg)
 void Parser::match_token(TokenType t)
 {
     if (token.type == t)
+    {
         token = scanner.getToken();
+#ifdef DEBUG
+        std::cout << "matched token: " << tokentype2str.at(token.type) << std::endl;
+#endif
+    }
     else
         Parser::error(token, "expect " + tokentype2str.at(t));
 }
@@ -64,6 +69,9 @@ void Parser::match_token(TokenType t)
 void Parser::program()
 {
     token = scanner.getToken(); // 初始化token
+#ifdef DEBUG
+    std::cout << "matched token: " << tokentype2str.at(token.type) << std::endl;
+#endif
     while (token.type != TokenType::END)
     {
         statement();
@@ -87,6 +95,9 @@ void Parser::statement()
 
 void Parser::for_statement()
 {
+#ifdef DEBUG
+    std::cout << "enter for_statement\n";
+#endif
     match_token(TokenType::FOR);
     match_token(TokenType::T);
     match_token(TokenType::FROM);
@@ -106,10 +117,16 @@ void Parser::for_statement()
     TreeNode *y_ptr = expression();
     parser_trees.push_back(y_ptr);
     match_token(TokenType::R_BRACKET);
+#ifdef DEBUG
+    std::cout << "exit for_statement\n";
+#endif
 }
 
 void Parser::origin_statement()
 {
+#ifdef DEBUG
+    std::cout << "enter origin_statement\n";
+#endif
     match_token(TokenType::ORIGIN);
     match_token(TokenType::IS);
     match_token(TokenType::L_BRACKET);
@@ -119,10 +136,16 @@ void Parser::origin_statement()
     TreeNode *y_ptr = expression();
     parser_trees.push_back(y_ptr);
     match_token(TokenType::R_BRACKET);
+#ifdef DEBUG
+    std::cout << "exit origin_statement\n";
+#endif
 }
 
 void Parser::scale_statement()
 {
+#ifdef DEBUG
+    std::cout << "enter scale_statement\n";
+#endif
     match_token(TokenType::SCALE);
     match_token(TokenType::IS);
     match_token(TokenType::L_BRACKET);
@@ -132,18 +155,30 @@ void Parser::scale_statement()
     TreeNode *y_ptr = expression();
     parser_trees.push_back(y_ptr);
     match_token(TokenType::R_BRACKET);
+#ifdef DEBUG
+    std::cout << "exit scale_statement\n";
+#endif
 }
 
 void Parser::rotate_statement()
 {
+#ifdef DEBUG
+    std::cout << "enter rotate_statement\n";
+#endif
     match_token(TokenType::ROTATE);
     match_token(TokenType::IS);
     TreeNode *angle_ptr = expression();
     parser_trees.push_back(angle_ptr);
+#ifdef DEBUG
+    std::cout << "exit rotate_statement\n";
+#endif
 }
 
 TreeNode *Parser::expression()
 {
+#ifdef DEBUG
+    std::cout << "enter expression\n";
+#endif
     TreeNode *left, *right;
     left = term();
     while (token.type == TokenType::PLUS || token.type == TokenType::MINUS)
@@ -153,11 +188,17 @@ TreeNode *Parser::expression()
         right = term();
         left = new TreeNode(op, left, right);
     }
+#ifdef DEBUG
+    std::cout << "exit expression\n";
+#endif
     return left;
 }
 
 TreeNode *Parser::term()
 {
+#ifdef DEBUG
+    std::cout << "enter term\n";
+#endif
     TreeNode *left, *right;
     left = factor();
     while (token.type == TokenType::MUL || token.type == TokenType::DIV)
@@ -167,11 +208,17 @@ TreeNode *Parser::term()
         right = factor();
         left = new TreeNode(op, left, right);
     }
+#ifdef DEBUG
+    std::cout << "exit term\n";
+#endif
     return left;
 }
 
 TreeNode *Parser::factor()
 {
+#ifdef DEBUG
+    std::cout << "enter factor\n";
+#endif
     TreeNode *node;
     if (token.type == TokenType::PLUS || token.type == TokenType::MINUS)
     {
@@ -187,24 +234,36 @@ TreeNode *Parser::factor()
     }
     else
         node = component();
+#ifdef DEBUG
+    std::cout << "exit factor\n";
+#endif
     return node;
 }
 
 TreeNode *Parser::component()
 {
+#ifdef DEBUG
+    std::cout << "enter component\n";
+#endif
     TreeNode *left, *right;
     left = atom();
-    if (token.type == TokenType::POWER)
+    while (token.type == TokenType::POWER)
     {
         match_token(TokenType::POWER);
-        right = component();
+        right = atom();
         left = new TreeNode(TokenType::POWER, left, right);
     }
+#ifdef DEBUG
+    std::cout << "exit component\n";
+#endif
     return left;
 }
 
 TreeNode *Parser::atom()
 {
+#ifdef DEBUG
+    std::cout << "enter atom\n";
+#endif
     TreeNode *node;
     if (token.type == TokenType::CONST_ID)
     {
@@ -227,11 +286,14 @@ TreeNode *Parser::atom()
     else if (token.type == TokenType::L_BRACKET)
     {
         match_token(TokenType::L_BRACKET);
-        TreeNode *node = expression();
+        node = expression();
         match_token(TokenType::R_BRACKET);
     }
     else
         error(token, "invalid atom");
+#ifdef DEBUG
+    std::cout << "exit atom\n";
+#endif
     return node;
 }
 

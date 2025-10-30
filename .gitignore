@@ -2,13 +2,7 @@
 .vscode/settings.json
 .vscode/tasks.json
 .vscode/launch.json
-test_scanner.cpp
-test_scanner.exe
-test_scanner.txt
-test_parser.cpp
-test_parser.exe
-test_parser.txt
 test.cpp
 test.exe
-test.txt
-a.exe
+test_input.txt
+test_output.txt
