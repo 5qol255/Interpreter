@@ -7,6 +7,7 @@
 #include <exception>
 #include <string>
 #include <vector>
+
 #ifdef DEBUG
 #include <iostream>
 #endif
@@ -44,10 +45,11 @@ public:
         : left(left), right(right), nodetype(nodetypes::r_value) { filling.r_value = r_value; };
     TreeNode(double *l_value, TreeNode *left = nullptr, TreeNode *right = nullptr)
         : left(left), right(right), nodetype(nodetypes::l_value) { filling.l_value = l_value; };
-#ifdef DEBUG
-    friend void travel(TreeNode *node);
-#endif
 };
+
+#ifdef DEBUG
+void travel(TreeNode *node);
+#endif
 
 class Parser
 {

@@ -55,9 +55,6 @@ void Parser::error(const Token &tk, const string &msg)
 
 void Parser::match_token(TokenType t)
 {
-    // #ifdef DEBUG
-    //     printf("%s %s\n", token.name.c_str(), tokentype2str.at(t).c_str());
-    // #endif
     if (token.type == t)
         token = scanner.getToken();
     else
@@ -151,9 +148,10 @@ TreeNode *Parser::expression()
     left = term();
     while (token.type == TokenType::PLUS || token.type == TokenType::MINUS)
     {
+        auto op = token.type;
         match_token(token.type);
         right = term();
-        left = new TreeNode(token.type, left, right);
+        left = new TreeNode(op, left, right);
     }
     return left;
 }
@@ -164,9 +162,10 @@ TreeNode *Parser::term()
     left = factor();
     while (token.type == TokenType::MUL || token.type == TokenType::DIV)
     {
+        auto op = token.type;
         match_token(token.type);
         right = factor();
-        left = new TreeNode(token.type, left, right);
+        left = new TreeNode(op, left, right);
     }
     return left;
 }
@@ -181,7 +180,7 @@ TreeNode *Parser::factor()
         if (op == TokenType::MINUS)
         {
             auto zero_node = new TreeNode(0.0);
-            node = new TreeNode(token.type, zero_node, component());
+            node = new TreeNode(op, zero_node, component());
         }
         else
             node = component();
@@ -197,7 +196,6 @@ TreeNode *Parser::component()
     left = atom();
     if (token.type == TokenType::POWER)
     {
-        auto op = token.type;
         match_token(TokenType::POWER);
         right = component();
         left = new TreeNode(TokenType::POWER, left, right);
@@ -261,9 +259,8 @@ void travel(TreeNode *node)
         std::cout << node->filling.r_value;
     else if (node->nodetype == TreeNode::nodetypes::l_value)
         std::cout << *(node->filling.l_value);
-
+    std::cout << ' ';
     if (node->right != nullptr)
         travel(node->right);
-    std::cout << ' ';
 };
 #endif
