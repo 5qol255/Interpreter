@@ -4,6 +4,7 @@
 
 #ifdef DEBUG
 #include <iostream>
+#define for_each(i, c) for (auto i = c.begin(); i != c.end(); ++i)
 #endif
 
 using std::string;
@@ -102,23 +103,33 @@ void Parser::for_statement()
     match_token(TokenType::T);
     match_token(TokenType::FROM);
     TreeNode *start_ptr = expression();
-    parser_trees.push_back(start_ptr);
     match_token(TokenType::TO);
     TreeNode *end_ptr = expression();
-    parser_trees.push_back(end_ptr);
     match_token(TokenType::STEP);
     TreeNode *step_ptr = expression();
-    parser_trees.push_back(step_ptr);
     match_token(TokenType::DRAW);
     match_token(TokenType::L_BRACKET);
     TreeNode *x_ptr = expression();
-    parser_trees.push_back(x_ptr);
     match_token(TokenType::COMMA);
     TreeNode *y_ptr = expression();
-    parser_trees.push_back(y_ptr);
     match_token(TokenType::R_BRACKET);
+    parser_trees.emplace_back(start_ptr);
+    parser_trees.emplace_back(end_ptr);
+    parser_trees.emplace_back(step_ptr);
+    parser_trees.emplace_back(x_ptr);
+    parser_trees.emplace_back(y_ptr);
 #ifdef DEBUG
     std::cout << "exit for_statement\n";
+    travel(start_ptr);
+    std::cout << '\n';
+    travel(end_ptr);
+    std::cout << '\n';
+    travel(step_ptr);
+    std::cout << '\n';
+    travel(x_ptr);
+    std::cout << '\n';
+    travel(y_ptr);
+    std::cout << "\n\n";
 #endif
 }
 
@@ -131,13 +142,17 @@ void Parser::origin_statement()
     match_token(TokenType::IS);
     match_token(TokenType::L_BRACKET);
     TreeNode *x_ptr = expression();
-    parser_trees.push_back(x_ptr);
     match_token(TokenType::COMMA);
     TreeNode *y_ptr = expression();
-    parser_trees.push_back(y_ptr);
     match_token(TokenType::R_BRACKET);
+    parser_trees.emplace_back(x_ptr);
+    parser_trees.emplace_back(y_ptr);
 #ifdef DEBUG
     std::cout << "exit origin_statement\n";
+    travel(x_ptr);
+    std::cout << '\n';
+    travel(y_ptr);
+    std::cout << "\n\n";
 #endif
 }
 
@@ -150,13 +165,17 @@ void Parser::scale_statement()
     match_token(TokenType::IS);
     match_token(TokenType::L_BRACKET);
     TreeNode *x_ptr = expression();
-    parser_trees.push_back(x_ptr);
     match_token(TokenType::COMMA);
     TreeNode *y_ptr = expression();
-    parser_trees.push_back(y_ptr);
     match_token(TokenType::R_BRACKET);
+    parser_trees.emplace_back(x_ptr);
+    parser_trees.emplace_back(y_ptr);
 #ifdef DEBUG
     std::cout << "exit scale_statement\n";
+    travel(x_ptr);
+    std::cout << '\n';
+    travel(y_ptr);
+    std::cout << "\n\n";
 #endif
 }
 
@@ -168,9 +187,11 @@ void Parser::rotate_statement()
     match_token(TokenType::ROTATE);
     match_token(TokenType::IS);
     TreeNode *angle_ptr = expression();
-    parser_trees.push_back(angle_ptr);
+    parser_trees.emplace_back(angle_ptr);
 #ifdef DEBUG
     std::cout << "exit rotate_statement\n";
+    travel(angle_ptr);
+    std::cout << "\n\n";
 #endif
 }
 

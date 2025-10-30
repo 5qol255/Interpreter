@@ -54,7 +54,26 @@ void travel(TreeNode *node);
 class Parser
 {
     Scanner scanner;
+    // class bundle
+    // {
+    // public:
+    //     TreeNode *for_from;
+    //     TreeNode *for_to;
+    //     TreeNode *for_step;
+    //     TreeNode *draw_x;
+    //     TreeNode *draw_y;
+    //     TreeNode *origin_x;
+    //     TreeNode *origin_y;
+    //     TreeNode *scale_x;
+    //     TreeNode *scale_y;
+    //     TreeNode *rotate_angle;
+    //     bundle() : for_from(nullptr), for_to(nullptr), for_step(nullptr),
+    //                draw_x(nullptr), draw_y(nullptr), origin_x(nullptr),
+    //                origin_y(nullptr), scale_x(nullptr), scale_y(nullptr),
+    //                rotate_angle(nullptr) {};
+    // };
     std::vector<TreeNode *> parser_trees;
+    // std::vector<bundle> bundle_parser_trees;
     // parsing functions
     void program();
     void statement();
@@ -74,17 +93,6 @@ class Parser
 public:
     Parser(const string &filename, int n = 4096) : scanner(filename, n) {};
     void run() { program(); };
-#ifdef DEBUG
-    void print_trees() const
-    {
-        std::cout << parser_trees.size() << " parser_trees:\n";
-        for (const auto &tree : parser_trees)
-        {
-            travel(tree);
-            std::cout << '\n';
-        }
-    };
-#endif
 };
 
 #endif
