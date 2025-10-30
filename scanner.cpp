@@ -247,12 +247,12 @@ const std::unordered_map<int, std::unordered_map<char, int>> state_transition_ta
 }; // 状态转移表
 
 const std::unordered_map<string, double (*)(double)> func_table = {
-    {"SIN", sin},
-    {"COS", cos},
-    {"TAN", tan},
-    {"LN", log},
-    {"EXP", exp},
-    {"SQRT", sqrt},
+    {"SIN", std::sin},
+    {"COS", std::cos},
+    {"TAN", std::tan},
+    {"LN", std::log},
+    {"EXP", std::exp},
+    {"SQRT", std::sqrt},
 }; // 函数表
 
 int smove(int current_state, char c)
@@ -317,7 +317,7 @@ Token Scanner::getToken()
             token.type = TokenType::ORIGIN;
         else if (token.name == "SCALE")
             token.type = TokenType::SCALE;
-        else if (token.name == "ROTATE")
+        else if (token.name == "ROT")
             token.type = TokenType::ROTATE;
         else if (token.name == "IS")
             token.type = TokenType::IS;

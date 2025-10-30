@@ -2,10 +2,14 @@
 #include <unordered_map>
 #include <cmath>
 
+#ifdef DEBUG
+#include <iostream>
+#endif
+
 using std::string;
 
 /* 变量T的定义 */
-double T;
+double T = 0.0;
 /* 辅助变量 */
 Token token;
 const std::unordered_map<TokenType, string> tokentype2str = {
@@ -51,6 +55,9 @@ void Parser::error(const Token &tk, const string &msg)
 
 void Parser::match_token(TokenType t)
 {
+    // #ifdef DEBUG
+    //     printf("%s %s\n", token.name.c_str(), tokentype2str.at(t).c_str());
+    // #endif
     if (token.type == t)
         token = scanner.getToken();
     else
@@ -87,17 +94,21 @@ void Parser::for_statement()
     match_token(TokenType::T);
     match_token(TokenType::FROM);
     TreeNode *start_ptr = expression();
+    parser_trees.push_back(start_ptr);
     match_token(TokenType::TO);
     TreeNode *end_ptr = expression();
+    parser_trees.push_back(end_ptr);
     match_token(TokenType::STEP);
     TreeNode *step_ptr = expression();
+    parser_trees.push_back(step_ptr);
     match_token(TokenType::DRAW);
     match_token(TokenType::L_BRACKET);
     TreeNode *x_ptr = expression();
+    parser_trees.push_back(x_ptr);
     match_token(TokenType::COMMA);
     TreeNode *y_ptr = expression();
+    parser_trees.push_back(y_ptr);
     match_token(TokenType::R_BRACKET);
-    // delete start_ptr, end_ptr, step_ptr, x_ptr, y_ptr;
 }
 
 void Parser::origin_statement()
@@ -106,10 +117,11 @@ void Parser::origin_statement()
     match_token(TokenType::IS);
     match_token(TokenType::L_BRACKET);
     TreeNode *x_ptr = expression();
+    parser_trees.push_back(x_ptr);
     match_token(TokenType::COMMA);
     TreeNode *y_ptr = expression();
+    parser_trees.push_back(y_ptr);
     match_token(TokenType::R_BRACKET);
-    // delete x_ptr, y_ptr;
 }
 
 void Parser::scale_statement()
@@ -118,10 +130,11 @@ void Parser::scale_statement()
     match_token(TokenType::IS);
     match_token(TokenType::L_BRACKET);
     TreeNode *x_ptr = expression();
+    parser_trees.push_back(x_ptr);
     match_token(TokenType::COMMA);
     TreeNode *y_ptr = expression();
+    parser_trees.push_back(y_ptr);
     match_token(TokenType::R_BRACKET);
-    // delete x_ptr, y_ptr;
 }
 
 void Parser::rotate_statement()
@@ -129,7 +142,7 @@ void Parser::rotate_statement()
     match_token(TokenType::ROTATE);
     match_token(TokenType::IS);
     TreeNode *angle_ptr = expression();
-    // delete angle_ptr;
+    parser_trees.push_back(angle_ptr);
 }
 
 TreeNode *Parser::expression()
@@ -197,6 +210,7 @@ TreeNode *Parser::atom()
     TreeNode *node;
     if (token.type == TokenType::CONST_ID)
     {
+        node = new TreeNode(token.value.v);
         match_token(TokenType::CONST_ID);
     }
     else if (token.type == TokenType::T)
@@ -211,7 +225,6 @@ TreeNode *Parser::atom()
         match_token(TokenType::L_BRACKET);
         node->right = expression(); // 函数的参数挂在右节点
         match_token(TokenType::R_BRACKET);
-        return node;
     }
     else if (token.type == TokenType::L_BRACKET)
     {
@@ -223,3 +236,34 @@ TreeNode *Parser::atom()
         error(token, "invalid atom");
     return node;
 }
+
+#ifdef DEBUG
+const std::unordered_map<double (*)(double), string> func_table = {
+    {std::sin, "SIN"},
+    {std::cos, "COS"},
+    {std::tan, "TAN"},
+    {std::log, "LN"},
+    {std::exp, "EXP"},
+    {std::sqrt, "SQRT"},
+}; // 函数表
+void travel(TreeNode *node)
+{
+    if (node == nullptr)
+        return;
+    if (node->left != nullptr)
+        travel(node->left);
+
+    if (node->nodetype == TreeNode::nodetypes::op)
+        std::cout << tokentype2str.at(node->filling.op);
+    else if (node->nodetype == TreeNode::nodetypes::func)
+        std::cout << func_table.at(node->filling.func);
+    else if (node->nodetype == TreeNode::nodetypes::r_value)
+        std::cout << node->filling.r_value;
+    else if (node->nodetype == TreeNode::nodetypes::l_value)
+        std::cout << *(node->filling.l_value);
+
+    if (node->right != nullptr)
+        travel(node->right);
+    std::cout << ' ';
+};
+#endif
