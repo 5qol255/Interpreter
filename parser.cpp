@@ -1,11 +1,7 @@
 #include "parser.hpp"
+#include <stdexcept>
 #include <unordered_map>
 #include <cmath>
-
-#ifdef DEBUG
-#include <iostream>
-#define for_each(i, c) for (auto i = c.begin(); i != c.end(); ++i)
-#endif
 
 using std::string;
 

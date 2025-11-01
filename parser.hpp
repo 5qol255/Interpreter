@@ -4,7 +4,6 @@
 #pragma once
 
 #include "scanner.hpp"
-#include <exception>
 #include <string>
 #include <vector>
 
