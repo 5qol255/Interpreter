@@ -1,8 +1,25 @@
 #include "drawer.hpp"
 #include <Windows.h>
 #include <stdexcept>
+#include <tchar.h>
+#include <string>
+#include <vector>
+#include <tuple>
 
-#define Error_msg(msg) MessageBox(NULL, msg, "Error", MB_ICONERROR)
+using std::wstring;
+
+// 辅助函数，用于检查函数调用是否成功
+inline void check(bool expr, const wstring &failed_msg = L"", int failed_code = 1);
+// 初始化窗口类并注册过程
+inline bool init_window_class(WNDCLASS *wc, HINSTANCE hInstance);
+// 创建窗口过程
+inline bool make_window(HWND *hwnd, HINSTANCE hInstance);
+// 首次更新窗口过程
+inline void first_update(HWND hWnd, int nCmdShow);
+// 处理消息过程
+inline void handle_messages(MSG *msg);
+// 消息处理函数
+LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 
 // WinMain：程序入口点
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -10,30 +27,64 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     WNDCLASS MyWindowClass;
     HWND hWnd;
     MSG Msg;
+    // 调用函数初始化窗口类并检查
+    check(init_window_class(&MyWindowClass, hInstance), L"Failed to register window class!");
+    // 调用函数创建窗口并检查
+    check(make_window(&hWnd, hInstance), L"Failed to create window!", 2);
+    // 调用函数首次更新窗口
+    first_update(hWnd, nCmdShow);
+    // 消息循环
+    handle_messages(&Msg);
+    return Msg.wParam;
+}
 
-    // 窗口类的初始化
-    MyWindowClass.style = CS_HREDRAW | CS_VREDRAW;
-    MyWindowClass.lpfnWndProc = WindowProcedure;
-    MyWindowClass.cbClsExtra = 0;
-    MyWindowClass.cbWndExtra = 0;
-    MyWindowClass.hInstance = hInstance;
-    MyWindowClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-    MyWindowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-    MyWindowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    MyWindowClass.lpszMenuName = NULL;
-    MyWindowClass.lpszClassName = "ExampleWindowClass";
-    // 窗口类的注册
-    if (!RegisterClass(&MyWindowClass))
+inline void draw_point(HDC hdc, int x, int y, int color)
+{
+    SetPixelV(hdc, x, y, color);
+}
+
+inline void draw_points(HDC hdc, const std::vector<std::tuple<int, int, int>> &points)
+{
+    for (auto const &point : points)
+        draw_point(hdc, std::get<0>(point), std::get<1>(point), std::get<2>(point));
+}
+
+inline void check(bool expr, const wstring &failed_msg, int failed_code)
+{
+    if (!expr)
     {
-        MessageBox(NULL, "Failed to register window class!", "Error", MB_ICONERROR);
-        throw std::runtime_error("Failed to register window class!");
-        return -1; // 注册失败，返回-1
+        MessageBox(
+            NULL,
+            (failed_msg + L"\nError code: " + std::to_wstring(failed_code)).c_str(),
+            L"Error",
+            MB_ICONERROR);
+        exit(failed_code);
     }
+}
 
-    // 创建窗口
-    hWnd = CreateWindow(
-        "ExampleWindowClass",
-        "Windows API Window - Complete Example",
+inline bool init_window_class(WNDCLASS *wc, HINSTANCE hInstance)
+{
+    wc->style = CS_HREDRAW | CS_VREDRAW;
+    wc->lpfnWndProc = WindowProcedure;
+    wc->cbClsExtra = 0;
+    wc->cbWndExtra = 0;
+    wc->hInstance = hInstance;
+    wc->hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    wc->hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc->hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wc->lpszMenuName = NULL;
+    wc->lpszClassName = L"ExampleWindowClass";
+    if (!RegisterClass(wc))
+        return false;
+    else
+        return true;
+}
+
+inline bool make_window(HWND *hwnd, HINSTANCE hInstance)
+{
+    *hwnd = CreateWindow(
+        L"ExampleWindowClass",
+        L"Windows API Window - Complete Example",
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
@@ -43,25 +94,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         NULL,
         hInstance,
         NULL);
-    // 检测窗口是否创建成功
-    if (!hWnd)
-    {
-        MessageBox(NULL, "Window creation failed!", "Error", MB_ICONERROR);
-        return -1;
-    }
+    if (!*hwnd)
+        return false;
+    else
+        return true;
+}
 
+inline void first_update(HWND hWnd, int nCmdShow)
+{
     // 显示窗口
     ShowWindow(hWnd, nCmdShow);
+    // 首次绘制强制刷新
     UpdateWindow(hWnd);
+}
 
-    // 消息循环
-    while (GetMessage(&Msg, NULL, 0, 0) > 0)
+inline void handle_messages(MSG *msg)
+{
+    while (GetMessage(msg, NULL, 0, 0) > 0)
     {
-        TranslateMessage(&Msg);
-        DispatchMessage(&Msg);
+        TranslateMessage(msg);
+        DispatchMessage(msg);
     }
-
-    return Msg.wParam;
 }
 
 // 消息处理函数定义
@@ -69,17 +122,18 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
     switch (msg)
     {
-    case WM_CREATE: // 窗口创建
-        break;
+    // case WM_CREATE: // 窗口创建
+    //     break;      // 无事发生
     case WM_PAINT:
     {
         // 绘制窗口内容
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
         // 绘制一些文本
-        TextOut(hdc, 20, 20, "Hello, Windows API!", 19);
-        TextOut(hdc, 20, 50, "This is a complete window example.", 32);
-        TextOut(hdc, 20, 80, "Click the close button to exit.", 31);
+        // TextOut(hdc, 20, 20, L"Hello, Windows API!", 19);
+        // TextOut(hdc, 20, 50, L"This is a complete window example.", 32);
+        // TextOut(hdc, 20, 80, L"Click the close button to exit.", 31);
+        draw_point(hdc, 100, 100, RGB(255, 0, 0));
         EndPaint(hWnd, &ps);
         break;
     }
@@ -93,10 +147,8 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
         break;
     }
     case WM_DESTROY: // 窗口销毁时的处理
-    {
         PostQuitMessage(0);
         break;
-    }
     default:
         return DefWindowProc(hWnd, msg, wp, lp);
     }
