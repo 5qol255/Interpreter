@@ -358,7 +358,8 @@ Token Scanner::getToken()
         int c;
         while ((c = buffer.get_data()) != EOF && c != '\n')
             ; // 跳过注释
-        break;
+        // 继续获取下一个记号
+        return getToken();
     default:
         break;
     }
