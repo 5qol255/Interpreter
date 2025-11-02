@@ -4,7 +4,9 @@
 #include <stack>
 #include <tuple>
 #include <cmath>
-#include <iostream> //待删除
+#ifdef DEBUG
+#include <iostream>
+#endif
 
 using std::string;
 
@@ -37,7 +39,7 @@ const std::unordered_map<TokenType, string> tokentype2str = {
     {TokenType::FUNC, "FUNCTION"},
 };
 std::vector<TreeNode *> node_sequence;
-#ifdef DEBUG
+#if DEBUG >= 1
 const std::unordered_map<double (*)(double), string> func_table = {
     {std::sin, "SIN"},
     {std::cos, "COS"},
@@ -105,7 +107,7 @@ double evaluate(TreeNode *node, std::vector<TreeNode *> &post_order_list)
                 value_stack.push(left / right);
                 break;
             case TokenType::POWER:
-                value_stack.push(pow(left, right));
+                value_stack.push(std::pow(left, right));
                 break;
             }
         }
@@ -117,7 +119,7 @@ double evaluate(TreeNode *node, std::vector<TreeNode *> &post_order_list)
     return value_stack.top();
 }
 
-#ifdef DEBUG
+#if DEBUG >= 1
 // 中序遍历,为了方便打印表达式
 void travel(TreeNode *node)
 {
@@ -165,7 +167,7 @@ void Parser::match_token(TokenType t)
     if (token.type == t)
     {
         token = scanner.getToken();
-#ifdef DEBUG
+#if DEBUG >= 2
         std::cout << "matched token: " << tokentype2str.at(token.type) << std::endl;
 #endif
     }
@@ -175,11 +177,11 @@ void Parser::match_token(TokenType t)
 
 void Parser::program()
 {
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "enter program\n";
 #endif
     token = scanner.getToken(); // 初始化token
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "matched token: " << tokentype2str.at(token.type) << std::endl;
 #endif
     while (token.type != TokenType::END)
@@ -187,14 +189,14 @@ void Parser::program()
         statement();
         match_token(TokenType::SEMICO);
     }
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "exit program\n";
 #endif
 }
 
 void Parser::statement()
 {
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "enter statement\n";
 #endif
     if (token.type == TokenType::FOR)
@@ -207,14 +209,14 @@ void Parser::statement()
         rotate_statement();
     else
         Parser::error(token, "invalid statement");
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "exit statement\n";
 #endif
 }
 
 void Parser::for_statement()
 {
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "enter for_statement\n";
 #endif
     match_token(TokenType::FOR);
@@ -257,7 +259,7 @@ void Parser::for_statement()
     }
     // 这里应该开始绘制，先跳过
     //
-#ifdef DEBUG
+#if DEBUG >= 1
     // 打印点列表
     for (auto const &point : point_list)
         std::cout << std::get<0>(point) << ","
@@ -269,8 +271,10 @@ void Parser::for_statement()
     reset_args();
     // 清空画点列表
     point_list.clear();
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "exit for_statement\n";
+#endif
+#if DEBUG >= 1
     travel(start_ptr);
     std::cout << '\n';
     travel(end_ptr);
@@ -286,7 +290,7 @@ void Parser::for_statement()
 
 void Parser::origin_statement()
 {
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "enter origin_statement\n";
 #endif
     match_token(TokenType::ORIGIN);
@@ -299,8 +303,10 @@ void Parser::origin_statement()
     // 调用求值函数对表达式进行求值
     origin_x = evaluate(x_ptr, node_sequence);
     origin_y = evaluate(y_ptr, node_sequence);
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "exit origin_statement\n";
+#endif
+#if DEBUG >= 1
     travel(x_ptr);
     std::cout << '\n';
     travel(y_ptr);
@@ -310,7 +316,7 @@ void Parser::origin_statement()
 
 void Parser::scale_statement()
 {
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "enter scale_statement\n";
 #endif
     match_token(TokenType::SCALE);
@@ -323,8 +329,10 @@ void Parser::scale_statement()
     // 调用求值函数对表达式进行求值
     scale_x = evaluate(x_ptr, node_sequence);
     scale_y = evaluate(y_ptr, node_sequence);
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "exit scale_statement\n";
+#endif
+#if DEBUG >= 1
     travel(x_ptr);
     std::cout << '\n';
     travel(y_ptr);
@@ -334,7 +342,7 @@ void Parser::scale_statement()
 
 void Parser::rotate_statement()
 {
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "enter rotate_statement\n";
 #endif
     match_token(TokenType::ROTATE);
@@ -342,8 +350,10 @@ void Parser::rotate_statement()
     TreeNode *angle_ptr = expression();
     // 调用求值函数对表达式进行求值
     rotate_angle = evaluate(angle_ptr, node_sequence);
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "exit rotate_statement\n";
+#endif
+#if DEBUG >= 1
     travel(angle_ptr);
     std::cout << "\n";
 #endif
@@ -351,7 +361,7 @@ void Parser::rotate_statement()
 
 TreeNode *Parser::expression()
 {
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "enter expression\n";
 #endif
     TreeNode *left, *right;
@@ -363,7 +373,7 @@ TreeNode *Parser::expression()
         right = term();
         left = new TreeNode(op, left, right);
     }
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "exit expression\n";
 #endif
     return left;
@@ -371,7 +381,7 @@ TreeNode *Parser::expression()
 
 TreeNode *Parser::term()
 {
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "enter term\n";
 #endif
     TreeNode *left, *right;
@@ -383,7 +393,7 @@ TreeNode *Parser::term()
         right = factor();
         left = new TreeNode(op, left, right);
     }
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "exit term\n";
 #endif
     return left;
@@ -391,7 +401,7 @@ TreeNode *Parser::term()
 
 TreeNode *Parser::factor()
 {
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "enter factor\n";
 #endif
     TreeNode *node;
@@ -409,7 +419,7 @@ TreeNode *Parser::factor()
     }
     else
         node = component();
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "exit factor\n";
 #endif
     return node;
@@ -417,7 +427,7 @@ TreeNode *Parser::factor()
 
 TreeNode *Parser::component()
 {
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "enter component\n";
 #endif
     TreeNode *left, *right;
@@ -428,7 +438,7 @@ TreeNode *Parser::component()
         right = atom();
         left = new TreeNode(TokenType::POWER, left, right);
     }
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "exit component\n";
 #endif
     return left;
@@ -436,7 +446,7 @@ TreeNode *Parser::component()
 
 TreeNode *Parser::atom()
 {
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "enter atom\n";
 #endif
     TreeNode *node;
@@ -466,7 +476,7 @@ TreeNode *Parser::atom()
     }
     else
         error(token, "invalid atom");
-#ifdef DEBUG
+#if DEBUG >= 2
     std::cout << "exit atom\n";
 #endif
     return node;

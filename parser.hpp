@@ -8,10 +8,6 @@
 #include <vector>
 #include <tuple>
 
-#ifdef DEBUG
-#include <iostream>
-#endif
-
 using std::string;
 
 class TreeNode
@@ -46,10 +42,6 @@ public:
     // 析构函数
     ~TreeNode() { delete left, delete right; };
 };
-
-#ifdef DEBUG
-void travel(TreeNode *node);
-#endif
 
 class Parser
 {

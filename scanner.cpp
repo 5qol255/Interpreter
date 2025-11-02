@@ -6,6 +6,9 @@
 #include <cctype>  // for isspace()
 #include <cstdlib> // for stod()
 #include <cmath>   // for math functions
+#if DEBUG >= 1
+#include <iostream>
+#endif
 
 #define PI 3.14159265358979323846
 #define E 2.71828182845904523536
@@ -14,7 +17,9 @@ using std::string;
 
 int Buffer::get_data()
 {
-    // printf("%d\n", current_size);
+#if DEBUG >= 2
+    std::cout << "Buffer current_size: " << current_size << '\n';
+#endif
     if (current_size < 1 && closed)
         return EOF;
     if (current_size < 1)
@@ -24,7 +29,6 @@ int Buffer::get_data()
         if (current_size < 1) // 仍然没有数据，说明文件结束
             return EOF;
     }
-    // printf("Buffer: %d\n", int(buffer[head++]));
     --current_size;
     return buffer[head++];
 }
@@ -54,7 +58,9 @@ void Buffer::fill_buffer()
         closed = true; // 更改eof标记
         file.close();  // 关闭文件
     }
-    // printf("Filled %d bytes into buffer\n", current_size);
+#if DEBUG >= 2
+    std::cout << "Filled " << current_size << " bytes into buffer\n";
+#endif
 }
 
 const std::unordered_map<int, TokenType> final_states = {
@@ -283,12 +289,13 @@ Token Scanner::getToken()
 {
     int state = 0, next_state;
     int ch = buffer.get_data();
-    // printf("state: %d, ch: %c\n", state, ch);
+#if DEBUG >= 2
+    std::cout << "state: " << state << ", ch: " << ch << '\n';
+#endif
     while (std::isspace(ch)) // 跳过空白字符
         ch = buffer.get_data();
     if (ch == EOF) // 文件结束
         return Token(TokenType::END, "END");
-    // printf("ch: %c==%d\n", ch, ch);
     Token token;
     for (;;)
     {
@@ -305,7 +312,9 @@ Token Scanner::getToken()
             break;
     }
     token.type = get_final_state_type(state);
-    // printf("Final state: %d, Token type: %d\n", state, int(token.type));
+#if DEBUG >= 2
+    std::cout << "Final state: " << state << ", Token type: " << int(token.type) << '\n';
+#endif
     switch (token.type)
     {
     case TokenType::ID:
