@@ -4,17 +4,11 @@
 #pragma once
 
 #include "scanner.hpp"
-#include <exception>
 #include <string>
 #include <vector>
-
-#ifdef DEBUG
-#include <iostream>
-#endif
+#include <tuple>
 
 using std::string;
-
-extern double T;
 
 class TreeNode
 {
@@ -45,36 +39,24 @@ public:
         : left(left), right(right), nodetype(nodetypes::r_value) { filling.r_value = r_value; };
     TreeNode(double *l_value, TreeNode *left = nullptr, TreeNode *right = nullptr)
         : left(left), right(right), nodetype(nodetypes::l_value) { filling.l_value = l_value; };
+    // 析构函数
+    ~TreeNode() { delete left, delete right; };
 };
-
-#ifdef DEBUG
-void travel(TreeNode *node);
-#endif
 
 class Parser
 {
     Scanner scanner;
-    // class bundle
-    // {
-    // public:
-    //     TreeNode *for_from;
-    //     TreeNode *for_to;
-    //     TreeNode *for_step;
-    //     TreeNode *draw_x;
-    //     TreeNode *draw_y;
-    //     TreeNode *origin_x;
-    //     TreeNode *origin_y;
-    //     TreeNode *scale_x;
-    //     TreeNode *scale_y;
-    //     TreeNode *rotate_angle;
-    //     bundle() : for_from(nullptr), for_to(nullptr), for_step(nullptr),
-    //                draw_x(nullptr), draw_y(nullptr), origin_x(nullptr),
-    //                origin_y(nullptr), scale_x(nullptr), scale_y(nullptr),
-    //                rotate_angle(nullptr) {};
-    // };
-    std::vector<TreeNode *> parser_trees;
-    // std::vector<bundle> bundle_parser_trees;
+    double T;
+    bool looping;
+    double scale_x, scale_y;                            // 缩放比例
+    double rotate_angle;                                // 旋转角度
+    double origin_x, origin_y;                          // 原点偏移
+    double from_, to_, step_;                           // range and step of T
+    std::vector<std::tuple<double, double>> point_list; // 绘图列表
+    // std::vector<std::tuple<double, double, int>> point_list; // 绘图列表
+
     // parsing functions
+    void match_token(TokenType t);
     void program();
     void statement();
     void for_statement();
@@ -87,11 +69,17 @@ class Parser
     TreeNode *component();
     TreeNode *atom();
     // helper functions
-    void match_token(TokenType t);
+    void reset_args(); // 重置origin, scale, rotate参数
+    double *next_T();  // 返回下一个指向T的指针
     static void error(const Token &tk = Token(), const string &msg = "");
 
 public:
-    Parser(const string &filename, int n = 4096) : scanner(filename, n) {};
+    Parser(const string &filename, int n = 4096)
+        : scanner(filename, n),
+          T(0.0), looping(false),
+          origin_x(0), origin_y(0),
+          scale_x(1), scale_y(1),
+          rotate_angle(0) {};
     void run() { program(); };
 };
 
