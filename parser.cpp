@@ -10,6 +10,9 @@
 
 using std::string;
 
+/* 定义Parser类的静态成员变量 */
+std::vector<std::tuple<double, double>> Parser::point_list;
+
 /* 辅助变量 */
 Token token;
 const std::unordered_map<TokenType, string> tokentype2str = {
@@ -24,7 +27,7 @@ const std::unordered_map<TokenType, string> tokentype2str = {
     {TokenType::SEMICO, "SEMICO"},
     {TokenType::ID, "ID"},
     {TokenType::END, "END"},
-    {TokenType::ERROR, "ERROR"},
+    {TokenType::Error, "Error"},
     {TokenType::T, "T"},
     {TokenType::ORIGIN, "ORIGIN"},
     {TokenType::SCALE, "SCALE"},
@@ -162,7 +165,7 @@ void Parser::error(const Token &tk, const string &msg)
     throw std::runtime_error(message);
 }
 
-void Parser::match_token(TokenType t)
+void Parser::match_token(enum class TokenType t)
 {
     if (token.type == t)
     {
@@ -257,8 +260,6 @@ void Parser::for_statement()
         point_list.emplace_back(std::make_tuple(x, y));
         // point_list.emplace_back(std::make_tuple(x, y, 0x000000ff));
     }
-    // 这里应该开始绘制，先跳过
-    //
 #if DEBUG >= 1
     // 打印点列表
     for (auto const &point : point_list)
@@ -269,8 +270,6 @@ void Parser::for_statement()
 #endif
     // 每次for-draw语句执行完毕后都要参数复位
     reset_args();
-    // 清空画点列表
-    point_list.clear();
 #if DEBUG >= 2
     std::cout << "exit for_statement\n";
 #endif

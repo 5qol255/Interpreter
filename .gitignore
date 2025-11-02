@@ -2,7 +2,6 @@
 .vscode/settings.json
 .vscode/tasks.json
 .vscode/launch.json
-test.cpp
-test.exe
 test_input.txt
 test_output.txt
+FDLI.exe

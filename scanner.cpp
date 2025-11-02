@@ -281,7 +281,7 @@ TokenType get_final_state_type(int state)
     }
     catch (std::out_of_range &e)
     {
-        return TokenType::ERROR;
+        return TokenType::Error;
     }
 }
 
@@ -356,7 +356,7 @@ Token Scanner::getToken()
             token.value.func_ptr = func_table.at(token.name);
         }
         else
-            token.type = TokenType::ERROR; // 无效标识符
+            token.type = TokenType::Error; // 无效标识符
         break;
     }
     case TokenType::CONST_ID:

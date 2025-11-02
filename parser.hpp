@@ -22,16 +22,16 @@ public:
     } nodetype;
     union node_filling
     {
-        TokenType op;           // 运算符
-        double (*func)(double); // 函数指针
-        double r_value;         // 数值(右)
-        double *l_value;        // 数值(左)
+        enum class TokenType op; // 运算符
+        double (*func)(double);  // 函数指针
+        double r_value;          // 数值(右)
+        double *l_value;         // 数值(左)
     } filling;
     TreeNode *left, *right;
     // 四种不同节点对应的构造函数
     TreeNode(TreeNode *left = nullptr, TreeNode *right = nullptr)
         : left(left), right(right) {};
-    TreeNode(TokenType op, TreeNode *left = nullptr, TreeNode *right = nullptr)
+    TreeNode(enum class TokenType op, TreeNode *left = nullptr, TreeNode *right = nullptr)
         : left(left), right(right), nodetype(nodetypes::op) { filling.op = op; };
     TreeNode(double (*func)(double), TreeNode *left = nullptr, TreeNode *right = nullptr)
         : left(left), right(right), nodetype(nodetypes::func) { filling.func = func; };
@@ -45,18 +45,16 @@ public:
 
 class Parser
 {
-    Scanner scanner;
-    double T;
-    bool looping;
-    double scale_x, scale_y;                            // 缩放比例
-    double rotate_angle;                                // 旋转角度
-    double origin_x, origin_y;                          // 原点偏移
-    double from_, to_, step_;                           // range and step of T
-    std::vector<std::tuple<double, double>> point_list; // 绘图列表
-    // std::vector<std::tuple<double, double, int>> point_list; // 绘图列表
-
+    // 私有成员变量
+    Scanner scanner;           // 词法分析器
+    double T;                  // 当前T值
+    bool looping;              // 辅助判断T是否达到边界
+    double scale_x, scale_y;   // 缩放比例
+    double rotate_angle;       // 旋转角度
+    double origin_x, origin_y; // 原点偏移
+    double from_, to_, step_;  // range and step of T
     // parsing functions
-    void match_token(TokenType t);
+    void match_token(enum class TokenType t);
     void program();
     void statement();
     void for_statement();
@@ -74,6 +72,8 @@ class Parser
     static void error(const Token &tk = Token(), const string &msg = "");
 
 public:
+    static std::vector<std::tuple<double, double>> point_list; // 绘图列表
+    // static std::vector<std::tuple<double, double, int>> point_list; // 绘图列表
     Parser(const string &filename, int n = 4096)
         : scanner(filename, n),
           T(0.0), looping(false),

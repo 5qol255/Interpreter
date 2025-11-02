@@ -38,14 +38,14 @@ enum class TokenType // 枚举记号类型
     DRAW,   // 绘制
     /* 其他 */
     END,   // 结束符
-    ERROR, // 非法记号
+    Error, // 非法记号
 };
 
 class Token // 记号类
 {
 public:
     /* 成员变量 */
-    TokenType type;
+    enum class TokenType type;
     string name;
     union
     {
@@ -53,7 +53,7 @@ public:
         double (*func_ptr)(double);
     } value;
     /* 构造函数 */
-    Token(TokenType t = TokenType::ERROR, const char n[] = "") : type(t), name(n) {};
+    Token(enum class TokenType t = TokenType::Error, const char n[] = "") : type(t), name(n) {};
     const string &to_str() const { return name; };
     // void print() { printf("%s %s\n", type, name.c_str()); };
 };

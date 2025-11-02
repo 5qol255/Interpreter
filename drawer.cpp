@@ -1,23 +1,27 @@
 #include "drawer.hpp"
+#include "parser.hpp"
 #include <Windows.h>
 #include <stdexcept>
 #include <tchar.h>
 #include <string>
 #include <vector>
 #include <tuple>
+#if DEBUG >= 1
+#include <iostream>
+#endif
 
 using std::wstring;
 
 // 辅助函数，用于检查函数调用是否成功
-inline void check(bool expr, const wstring &failed_msg = L"", int failed_code = 1);
+void check(bool expr, const wstring &failed_msg = L"", int failed_code = 1);
 // 初始化窗口类并注册过程
-inline bool init_window_class(WNDCLASS *wc, HINSTANCE hInstance);
+bool init_window_class(WNDCLASS *wc, HINSTANCE hInstance);
 // 创建窗口过程
-inline bool make_window(HWND *hwnd, HINSTANCE hInstance);
+bool make_window(HWND *hwnd, HINSTANCE hInstance);
 // 首次更新窗口过程
-inline void first_update(HWND hWnd, int nCmdShow);
+void first_update(HWND hWnd, int nCmdShow);
 // 处理消息过程
-inline void handle_messages(MSG *msg);
+void handle_messages(MSG *msg);
 // 消息处理函数
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 
@@ -38,18 +42,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     return Msg.wParam;
 }
 
-inline void draw_point(HDC hdc, int x, int y, int color)
+void draw_point(HDC hdc, int x, int y, int color)
 {
+    // 绘制一个点（颜色为红色）
     SetPixelV(hdc, x, y, color);
 }
 
-inline void draw_points(HDC hdc, const std::vector<std::tuple<int, int, int>> &points)
+void draw_points(HDC hdc, const std::vector<std::tuple<double, double>> &points)
 {
+    // 绘制一系列点（颜色为红色）
     for (auto const &point : points)
-        draw_point(hdc, std::get<0>(point), std::get<1>(point), std::get<2>(point));
+    {
+#if DEBUG >= 1
+        std::cout << std::get<0>(point) << ' ' << std::get<1>(point) << '\n';
+#endif
+        draw_point(hdc, std::get<0>(point), std::get<1>(point));
+    }
 }
 
-inline void check(bool expr, const wstring &failed_msg, int failed_code)
+void check(bool expr, const wstring &failed_msg, int failed_code)
 {
     if (!expr)
     {
@@ -62,7 +73,7 @@ inline void check(bool expr, const wstring &failed_msg, int failed_code)
     }
 }
 
-inline bool init_window_class(WNDCLASS *wc, HINSTANCE hInstance)
+bool init_window_class(WNDCLASS *wc, HINSTANCE hInstance)
 {
     wc->style = CS_HREDRAW | CS_VREDRAW;
     wc->lpfnWndProc = WindowProcedure;
@@ -80,7 +91,7 @@ inline bool init_window_class(WNDCLASS *wc, HINSTANCE hInstance)
         return true;
 }
 
-inline bool make_window(HWND *hwnd, HINSTANCE hInstance)
+bool make_window(HWND *hwnd, HINSTANCE hInstance)
 {
     *hwnd = CreateWindow(
         L"ExampleWindowClass",
@@ -100,7 +111,7 @@ inline bool make_window(HWND *hwnd, HINSTANCE hInstance)
         return true;
 }
 
-inline void first_update(HWND hWnd, int nCmdShow)
+void first_update(HWND hWnd, int nCmdShow)
 {
     // 显示窗口
     ShowWindow(hWnd, nCmdShow);
@@ -108,7 +119,7 @@ inline void first_update(HWND hWnd, int nCmdShow)
     UpdateWindow(hWnd);
 }
 
-inline void handle_messages(MSG *msg)
+void handle_messages(MSG *msg)
 {
     while (GetMessage(msg, NULL, 0, 0) > 0)
     {
@@ -122,28 +133,15 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
     switch (msg)
     {
-    // case WM_CREATE: // 窗口创建
-    //     break;      // 无事发生
     case WM_PAINT:
     {
         // 绘制窗口内容
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
-        // 绘制一些文本
-        // TextOut(hdc, 20, 20, L"Hello, Windows API!", 19);
-        // TextOut(hdc, 20, 50, L"This is a complete window example.", 32);
-        // TextOut(hdc, 20, 80, L"Click the close button to exit.", 31);
-        draw_point(hdc, 100, 100, RGB(255, 0, 0));
+        // 绘制点
+        draw_points(hdc, Parser::point_list);
+        // 结束绘制
         EndPaint(hWnd, &ps);
-        break;
-    }
-    case WM_SIZE: // 窗口大小改变
-    {
-        // int width = LOWORD(lp);
-        // int height = HIWORD(lp);
-        // TCHAR szText[100];
-        // _stprintf_s(szText, "Window resized to %d x %d", width, height);
-        // 可以在这里添加窗口大小改变的处理逻辑
         break;
     }
     case WM_DESTROY: // 窗口销毁时的处理
