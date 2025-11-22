@@ -1,6 +1,6 @@
-#include "scanner.hpp"
-#include "parser.hpp"
-#include "drawer.hpp"
+#include "FDLI/scanner.hpp"
+#include "FDLI/parser.hpp"
+#include "FDLI/drawer.hpp"
 
 int main()
 {
