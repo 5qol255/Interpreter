@@ -5,7 +5,6 @@
 #include <tchar.h>
 #include <string>
 #include <vector>
-#include <tuple>
 #if DEBUG >= 1
 #include <iostream>
 #endif
@@ -48,16 +47,20 @@ void draw_point(HDC hdc, int x, int y, int color)
     SetPixelV(hdc, x, y, color);
 }
 
-void draw_points(HDC hdc, const std::vector<std::tuple<double, double>> &points)
+void draw_points(HDC hdc, const std::vector<Point> &points)
 {
     // 绘制一系列点（颜色为红色）
     for (auto const &point : points)
     {
 #if DEBUG >= 1
-        std::cout << std::get<0>(point) << ' ' << std::get<1>(point) << '\n';
+        std::cout << point.x << ' ' << point.y << '\n';
 #endif
-        draw_point(hdc, std::get<0>(point), std::get<1>(point));
+        draw_point(hdc, point.x, point.y);
     }
+    // 画完清空点集，清空会导致重绘（改变窗口大小）时没点可画变成空白
+    // 除非窗口大小不改变，否则不要清空
+    // 且应在非const函数中修改point_list
+    // points.clear();
 }
 
 void check(bool expr, const wstring &failed_msg, int failed_code)
@@ -95,7 +98,7 @@ bool make_window(HWND *hwnd, HINSTANCE hInstance)
 {
     *hwnd = CreateWindow(
         L"ExampleWindowClass",
-        L"Windows API Window - Complete Example",
+        L"FDLI",
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         CW_USEDEFAULT,

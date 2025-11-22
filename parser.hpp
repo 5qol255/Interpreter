@@ -6,9 +6,15 @@
 #include "scanner.hpp"
 #include <string>
 #include <vector>
-#include <tuple>
 
 using std::string;
+
+class Point
+{
+public:
+    double x, y;
+    Point(double x = 0, double y = 0) : x(x), y(y) {};
+};
 
 class TreeNode
 {
@@ -72,8 +78,7 @@ class Parser
     static void error(const Token &tk = Token(), const string &msg = "");
 
 public:
-    static std::vector<std::tuple<double, double>> point_list; // 绘图列表
-    // static std::vector<std::tuple<double, double, int>> point_list; // 绘图列表
+    static std::vector<Point> point_list; // 绘图列表
     Parser(const string &filename, int n = 4096)
         : scanner(filename, n),
           T(0.0), looping(false),

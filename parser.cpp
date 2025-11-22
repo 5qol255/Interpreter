@@ -2,7 +2,6 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <stack>
-#include <tuple>
 #include <cmath>
 #ifdef DEBUG
 #include <iostream>
@@ -11,7 +10,7 @@
 using std::string;
 
 /* 定义Parser类的静态成员变量 */
-std::vector<std::tuple<double, double>> Parser::point_list;
+std::vector<Point> Parser::point_list;
 
 /* 辅助变量 */
 Token token;
@@ -257,8 +256,7 @@ void Parser::for_statement()
         x = temp_x + origin_x;
         y = temp_y + origin_y;
         // 创建点的对象存入待画列表
-        point_list.emplace_back(std::make_tuple(x, y));
-        // point_list.emplace_back(std::make_tuple(x, y, 0x000000ff));
+        point_list.emplace_back(Point(x, y));
     }
 #if DEBUG >= 1
     // 打印点列表
