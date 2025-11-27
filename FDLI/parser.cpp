@@ -261,10 +261,7 @@ void Parser::for_statement()
 #if DEBUG >= 1
     // 打印点列表
     for (auto const &point : point_list)
-        std::cout << std::get<0>(point) << ","
-                  << std::get<1>(point)
-                  //   << "," << std::get<2>(point)
-                  << "\n";
+        std::cout << point.x << ',' << point.y << '\n';
 #endif
     // 每次for-draw语句执行完毕后都要参数复位
     reset_args();
